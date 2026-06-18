@@ -1,0 +1,240 @@
+{
+  "name": "AI_News_Summerizer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        -32
+      ],
+      "id": "2eae18a3-1ee2-4bdf-88ee-26e351a3d33a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://aibusiness.com/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        -112
+      ],
+      "id": "a5a485bc-8dbb-42f9-972f-139bca15197b",
+      "name": "AI News feed"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "6b955ca8-5392-4e48-9ad4-b5e5346c05db",
+      "name": "Data Aggregater"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an AI news summarizer assistant.\nAnalyze the news articles and create an email summary.\nFor each article: \nCreate a headline in ALL CAPS\nWrite a 2-3 sentence summary\nInclude the article link\nFormat as:\nSubject: Today's AI News\nHi there,  Here's your AI news summary:\nHEADLINE IN CAPS\nSummary of what happened and why it matters...\nRead more: [link]\nBest regards,\nAI News Bot"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        352,
+        -16
+      ],
+      "id": "9b0d4cb3-d143-412c-ad58-eed6ef263265",
+      "name": "AI summarizer"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        144
+      ],
+      "id": "dd54838b-7619-49f7-b2f3-38749b0c71df",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "5WdvhLH7bUTw0Qey",
+          "name": "Google Gemini(PaLM) Api account 8883"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "vvce23cse0204@vvce.ac.in",
+        "subject": "Ai News For You..",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -16
+      ],
+      "id": "5d7daf23-d9e6-48d7-ae41-c1f3e96905a2",
+      "name": "Send a message",
+      "webhookId": "7a1a91d0-88a7-44d6-83c9-3fa401337800",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6iZ4XEHEpI0LuP6y",
+          "name": "Gmail account 2739"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        80
+      ],
+      "id": "84577b3d-1ad7-4df2-9ddb-21de60dd64ef",
+      "name": "Tech News"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "d24b9035-6ff4-4c25-91b1-69ff3e297395",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Tech News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI News feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI News feed": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Aggregater": {
+      "main": [
+        [
+          {
+            "node": "AI summarizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI summarizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI summarizer": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tech News": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Data Aggregater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8f62132a-95ea-46b9-b88d-a99965bc7ea0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "969257b09ad2942bbaff2e2288304f4969030574d109cdeca05bf11f630884df"
+  },
+  "id": "YzHucX6ZCDBXFFlQ",
+  "tags": []
+}
